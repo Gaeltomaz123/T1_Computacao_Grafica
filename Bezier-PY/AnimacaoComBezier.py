@@ -186,7 +186,7 @@ def arrow_keys(a_keys: int, x: int, y: int):
         pass
     if a_keys == GLUT_KEY_DOWN:       # Se pressionar DOWN
         pass
-    if a_keys == GLUT_KEY_LEFT:       # Se pressionar LEFT
+    if a_keys == GLUT_KEY_LEFT:      # Se pressionar LEFT
         Personagens[1].posicao.x -= 0.5
         
     if a_keys == GLUT_KEY_RIGHT:      # Se pressionar RIGHT
