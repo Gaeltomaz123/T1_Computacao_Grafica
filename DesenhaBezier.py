@@ -64,7 +64,7 @@ desenha = True
 # Imprime o texto S na posicao (x,y), com a cor 'cor'
 # **********************************************************************
 def PrintString(S: str, x: int, y: int, cor: tuple):
-    SetColor(cor) 
+    #defineCor(cor) 
     glRasterPos3f(x, y, 0) # define posicao na tela
     
     for c in S:
@@ -166,14 +166,14 @@ def DesenhaLinha (P1: Ponto, P2: Ponto):
 # ***********************************************************************************
 def DesenhaCurvas():
     for I in Curvas:
-        SetColor(Yellow)
+        glColor3f(0,1,1)
         I.Traca()
-        SetColor(Brown)
+        glColor3f(1,1,0)
         I.TracaPoligonoDeControle()
 
 # **********************************************************************
 def DesenhaPontos():
-    SetColor(Red)
+    glColor3f(1,0,0)
     glPointSize(4)
     glBegin(GL_POINTS)
 
@@ -204,13 +204,13 @@ def display():
 	# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     glLineWidth(1)
-    SetColor(White) 
+    glColor3f(1,1,1)
 
     DesenhaMenu()
     DesenhaEixos()
 
     glLineWidth(3)
-    SetColor(Red)
+    glColor3f(1,0,0)
     DesenhaPontos()
     DesenhaCurvas()
     ImprimeMensagens()
@@ -268,7 +268,7 @@ def ConvertePonto(P: Ponto) -> Ponto:
     P.y = viewport[3] - P.y
     wy = P.y
     wz = glReadPixels(P.x, P.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT)
-    ox, oy, oz = gluUnProject(wx, wy, wz, modelview, projection, viewport)
+    ox, oy, oz = gluUnProject(wx, wy, wz[0][0], modelview, projection, viewport)
     
     return Ponto(ox, oy, oz)
 

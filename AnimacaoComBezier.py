@@ -24,11 +24,13 @@ from OpenGL.GLU import *
 from Poligonos import *
 from InstanciaBZ import *
 from Bezier import *
+from ListaDeCoresRGB import *
 # ***********************************************************************************
 
 # Modelos de Objetos
 MeiaSeta = Polygon()
 Mastro = Polygon()
+Mapa = Polygon()
 
 # Limites da Janela de Seleção
 Min = Ponto()
@@ -43,7 +45,72 @@ Curvas = []
 
 angulo = 0.0
 
+# ***********************************************************************************
+#
+# ***********************************************************************************
+def CarregaModelos():
+    global MeiaSeta, Mastro
+    MeiaSeta.LePontosDeArquivo("MeiaSeta.txt")
+    Mastro.LePontosDeArquivo("Mastro.txt")
+    Mapa.LePontosDeArquivo("EstadoRS.txt")
+    A, B = Mapa.getLimits()
+    print("Limites do Mapa")
+    A.imprime()
+    B.imprime()
 
+# ***********************************************************************************
+def DesenhaPersonagem():
+    SetColor(YellowGreen)
+    glTranslatef(53,33,0)
+    Mapa.desenhaPoligono()
+    pass
+
+
+# ***********************************************************************************
+# Esta função deve instanciar todos os personagens do cenário
+# ***********************************************************************************
+def CriaInstancias():
+    global Personagens
+
+    Personagens.append(InstanciaBZ())
+    Personagens[0].modelo = DesenhaPersonagem
+    Personagens[0].rotacao = 0
+    Personagens[0].posicao = Ponto(0,0)
+    Personagens[0].escala = Ponto (1,1,1) 
+
+
+# ***********************************************************************************
+def CriaCurvas():
+    global Curvas
+    C = Bezier(Ponto (-5,-5), Ponto (0,6), Ponto (5,-5))
+    Curvas.append(C)
+    C = Bezier(Ponto(5, -5), Ponto(15, 0), Ponto(12, 12))
+    Curvas.append(C)
+    C = Bezier(Ponto(-10, -5), Ponto(-15, 15), Ponto(12, 12))
+    Curvas.append(C)
+
+# ***********************************************************************************
+def init():
+    global Min, Max
+    # Define a cor do fundo da tela
+    glClearColor(1, 1, 1, 1)
+
+    CarregaModelos()
+    CriaInstancias()
+    CriaCurvas()
+
+    d:float = 15
+    Min = Ponto(-d,-d)
+    Max = Ponto(d,d)
+
+# ****************************************************************
+def animate():
+    global angulo
+    print('a')
+    angulo = angulo + 1
+    glutPostRedisplay()
+
+# ****************************************************************
 def DesenhaLinha (P1, P2):
     glBegin(GL_LINES)
     glVertex3f(P1.x,P1.y,P1.z)
@@ -71,52 +138,6 @@ def reshape(w,h):
     glMatrixMode (GL_MODELVIEW)
     glLoadIdentity()
 
-# ***********************************************************************************
-def DesenhaMastro():
-    Mastro.desenhaPoligono()
-
-# ***********************************************************************************
-def DesenhaSeta():
-    glPushMatrix()
-    MeiaSeta.desenhaPoligono()
-    glScaled(1,-1, 1)
-    MeiaSeta.desenhaPoligono()
-    glPopMatrix()
-
-# ***********************************************************************************
-def DesenhaApontador():
-    glPushMatrix()
-    glTranslated(-4, 0, 0)
-    DesenhaSeta()
-    glPopMatrix()
-# **********************************************************************
-def DesenhaHelice():
-    glPushMatrix()
-    for i in range (4):   
-        glRotatef(90, 0, 0, 1)
-        DesenhaApontador()
-    glPopMatrix()
-
-def DesenhaHelicesGirando():
-    global angulo
-    #print ("angulo:", angulo)
-    glPushMatrix()
-    glRotatef(angulo, 0, 0, 1)
-    DesenhaHelice()
-    glPopMatrix()
-
-def DesenhaCatavento():
-    glLineWidth(3)
-    glPushMatrix()
-    DesenhaMastro()
-    glPushMatrix()
-    glColor3f(1,0,0)
-    glTranslated(0,3,0)
-    glScaled(0.2, 0.2, 1)
-    DesenhaHelicesGirando()
-    glPopMatrix()
-    glPopMatrix()
-
 # **************************************************************
 def DesenhaEixos():
     global Min, Max
@@ -140,10 +161,29 @@ def DesenhaPersonagens():
     for I in Personagens:
         I.Desenha()
 
+
+# ***********************************************************************************
+# Versao 
+def DesenhaPoligonoDeControle(curva):
+    glBegin(GL_LINE_STRIP)
+    for v in range(0,3):
+        P = Curvas[curva].getPC(v)
+        glVertex2d(P.x, P.y)
+    glEnd()
+
 # ***********************************************************************************
 def DesenhaCurvas():
+    v = 0
+    #for v, I in enumerate(Curvas):
     for I in Curvas:
+        glLineWidth(3)
+        SetColor(Blue)
         I.Traca()
+        glLineWidth(2)
+        SetColor(Bronze)
+        I.TracaPoligonoDeControle()
+        #DesenhaPoligonoDeControle(v)
+
 
 # ***********************************************************************************
 def display():
@@ -154,8 +194,7 @@ def display():
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
 
-    glLineWidth(3)
-    glColor3f(1,1,1) # R, G, B  [0..1]
+    glColor3f(1,0,0) # R, G, B  [0..1]
     DesenhaEixos()
 
     DesenhaPersonagens()
@@ -186,7 +225,7 @@ def arrow_keys(a_keys: int, x: int, y: int):
         pass
     if a_keys == GLUT_KEY_DOWN:       # Se pressionar DOWN
         pass
-    if a_keys == GLUT_KEY_LEFT:      # Se pressionar LEFT
+    if a_keys == GLUT_KEY_LEFT:       # Se pressionar LEFT
         Personagens[1].posicao.x -= 0.5
         
     if a_keys == GLUT_KEY_RIGHT:      # Se pressionar RIGHT
@@ -224,56 +263,6 @@ def mouseMove(x: int, y: int):
     #glutPostRedisplay()
     return
 
-def CarregaModelos():
-    global MeiaSeta, Mastro
-    MeiaSeta.LePontosDeArquivo("MeiaSeta.txt")
-    Mastro.LePontosDeArquivo("Mastro.txt")
-
-# ***********************************************************************************
-# Esta função deve instanciar todos os personagens do cenário
-# ***********************************************************************************
-def CriaInstancias():
-    global Personagens
-
-    Personagens.append(InstanciaBZ())
-    Personagens[0].modelo = DesenhaCatavento
-    Personagens[0].rotacao = 0
-    Personagens[0].posicao = Ponto(0,0)
-    Personagens[0].escala = Ponto (1,1,1) 
-
-    Personagens.append(InstanciaBZ())
-    Personagens[1].posicao = Ponto(3,0)
-    Personagens[1].modelo = DesenhaCatavento
-    Personagens[1].rotacao = -90
-  
-    Personagens.append(InstanciaBZ())
-    Personagens[2].posicao = Ponto(0,-5)
-    Personagens[2].modelo = DesenhaCatavento
-    Personagens[2].rotacao = 0
-
-def CriaCurvas():
-    global Curvas
-    C = Bezier(Ponto (-5,-5), Ponto (0,6), Ponto (5,-5))
-    Curvas.append(C)
-
-# ***********************************************************************************
-def init():
-    global Min, Max
-    # Define a cor do fundo da tela (AZUL)
-    glClearColor(0, 0, 1, 1)
-
-    CarregaModelos()
-    CriaInstancias()
-    CriaCurvas()
-
-    d:float = 7
-    Min = Ponto(-d,-d)
-    Max = Ponto(d,d)
-
-def animate():
-    global angulo
-    angulo = angulo + 1
-    glutPostRedisplay()
 
 # ***********************************************************************************
 # Programa Principal
@@ -284,7 +273,7 @@ glutInitDisplayMode(GLUT_RGBA)
 # Define o tamanho inicial da janela grafica do programa
 glutInitWindowSize(500, 500)
 glutInitWindowPosition(100, 100)
-wind = glutCreateWindow("Exemplo de Criacao de Instancias")
+wind = glutCreateWindow("Exemplo de Criacao de Curvas Bezier")
 glutDisplayFunc(display)
 glutIdleFunc(animate)
 glutReshapeFunc(reshape)
