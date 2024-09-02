@@ -1,6 +1,7 @@
 
 
 from OpenGL.GL import glColor3f
+import random
 
 # Lista de valores RBB para cores
 # Valores obtidos em https://community.khronos.org/t/color-tables/22518/5
