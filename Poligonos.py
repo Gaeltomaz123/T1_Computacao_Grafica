@@ -34,13 +34,13 @@ class Polygon:
         glBegin(GL_LINE_LOOP)
         for V in self.Vertices:
             glVertex3f(V.x,V.y,V.z)
-        glEnd();
+        glEnd()
 
     def desenhaVertices(self):
-        glBegin(GL_POINTS);
+        glBegin(GL_POINTS)
         for V in self.Vertices:
             glVertex3f(V.x,V.y,V.z)
-        glEnd();
+        glEnd()
 
     def imprimeVertices(self):
         for x in self.Vertices:
