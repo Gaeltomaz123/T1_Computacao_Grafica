@@ -8,10 +8,12 @@ from ListaDeCoresRGB import *
 import random
 # ***********************************************************************************
 
+# Cores aleatórias para as curvas
+cores = []
+for i in range(0, 13):
+    cores.append(random.randint(2, 92))
+
 # Modelos de Objetos
-MeiaSeta = Polygon()
-Mastro = Polygon()
-Mapa = Polygon()
 PontosControle = Polygon()
 
 # Limites da Janela de Seleção
@@ -24,7 +26,6 @@ Personagens = []
 # ***********************************************************************************
 # Lista de curvas Bezier
 Curvas = []
-Curvas2 = []
 
 angulo = 0.0
 
@@ -32,16 +33,7 @@ angulo = 0.0
 #
 # ***********************************************************************************
 def CarregaModelos():
-    global MeiaSeta, Mastro
-    MeiaSeta.LePontosDeArquivo("MeiaSeta.txt")
-    Mastro.LePontosDeArquivo("Mastro.txt")
-    Mapa.LePontosDeArquivo("EstadoRS.txt")
     PontosControle.LePontosDeArquivo("CurvasControle.txt")
-    
-    A, B = Mapa.getLimits()
-    print("Limites do Mapa")
-    A.imprime()
-    B.imprime()
 
 # ***********************************************************************************
 def DesenhaPersonagem():
@@ -91,7 +83,7 @@ def init():
     CriaInstancias()
     CriaCurvas()
 
-    d:float = 15
+    d:float = 5
     Min = Ponto(-d,-d)
     Max = Ponto(d,d)
 
@@ -129,24 +121,6 @@ def reshape(w,h):
     glMatrixMode (GL_MODELVIEW)
     glLoadIdentity()
 
-# **************************************************************
-def DesenhaEixos():
-    global Min, Max
-
-    Meio = Ponto(); 
-    Meio.x = (Max.x+Min.x)/2
-    Meio.y = (Max.y+Min.y)/2
-    Meio.z = (Max.z+Min.z)/2
-
-    glBegin(GL_LINES)
-    #  eixo horizontal
-    glVertex2f(Min.x,Meio.y)
-    glVertex2f(Max.x,Meio.y)
-    #  eixo vertical
-    glVertex2f(Meio.x,Min.y)
-    glVertex2f(Meio.x,Max.y)
-    glEnd()
-
 # ***********************************************************************************
 def DesenhaPersonagens():
     for I in Personagens:
@@ -154,26 +128,18 @@ def DesenhaPersonagens():
 
 
 # ***********************************************************************************
-# Versao 
-def DesenhaPoligonoDeControle(curva):
-    glBegin(GL_LINE_STRIP)
-    for v in range(0,3):
-        P = Curvas[curva].getPC(v)
-        glVertex2d(P.x, P.y)
-    glEnd()
 
 # ***********************************************************************************
 def DesenhaCurvas():
     v = 0
     colors = []
     #for v, I in enumerate(Curvas):
+    count = 0
     for I in Curvas:
-        glLineWidth(3)
-        SetColor(Blue)
-        I.Traca()
         glLineWidth(2)
-        SetColor(Bronze)
-        I.TracaPoligonoDeControle()
+        SetColor(cores[count])
+        I.Traca()
+        count += 1
         #DesenhaPoligonoDeControle(v)
 
 
@@ -185,9 +151,6 @@ def display():
 
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-
-    glColor3f(1,0,0) # R, G, B  [0..1]
-    DesenhaEixos()
 
     DesenhaPersonagens()
     DesenhaCurvas()
@@ -265,7 +228,7 @@ glutInitDisplayMode(GLUT_RGBA)
 # Define o tamanho inicial da janela grafica do programa
 glutInitWindowSize(500, 500)
 glutInitWindowPosition(100, 100)
-wind = glutCreateWindow("Exemplo de Criacao de Curvas Bezier")
+wind = glutCreateWindow("Labirinto - T1")
 glutDisplayFunc(display)
 glutIdleFunc(animate)
 glutReshapeFunc(reshape)
