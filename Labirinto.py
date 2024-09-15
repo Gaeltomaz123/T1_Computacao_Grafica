@@ -10,7 +10,7 @@ import random
 
 # Cores aleatórias para as curvas
 cores = []
-for i in range(0, 13):
+for i in range(0, 20):
     cores.append(random.randint(2, 92))
 
 # Modelos de Objetos
@@ -21,7 +21,7 @@ Min = Ponto()
 Max = Ponto()
 
 # lista de instancias do Personagens
-Personagens = [] 
+Personagens = [1] 
 
 # ***********************************************************************************
 # Lista de curvas Bezier
@@ -77,7 +77,7 @@ def IndicesCurvas(Nome):
 def init():
     global Min, Max
     # Define a cor do fundo da tela
-    glClearColor(1, 1, 1, 1)
+    glClearColor(0, 0, 0, 0)
 
     CarregaModelos()
     CriaInstancias()
