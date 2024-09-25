@@ -10,7 +10,7 @@ import random
 
 # Cores aleatórias para as curvas
 cores = []
-for i in range(0, 20):
+for i in range(0, 21):
     cores.append(random.randint(2, 92))
 
 # Modelos de Objetos
@@ -21,7 +21,7 @@ Min = Ponto()
 Max = Ponto()
 
 # lista de instancias do Personagens
-Personagens = [1] 
+Personagens = [] 
 
 # ***********************************************************************************
 # Lista de curvas Bezier
@@ -37,7 +37,13 @@ def CarregaModelos():
 
 # ***********************************************************************************
 def DesenhaPersonagem():
+    glBegin(GL_TRIANGLES)
     SetColor(YellowGreen)
+    glVertex3f(-0.1, -0.1, 0.0)
+    glVertex3f( 0.1, -0.1, 0.0)
+    glVertex3f( 0.1,  0.1, 0.0)
+    glVertex3f(-0.1,  0.1, 0.0)
+    glEnd()
     pass
 
 
@@ -46,10 +52,9 @@ def DesenhaPersonagem():
 # ***********************************************************************************
 def CriaInstancias():
     global Personagens
-
     Personagens.append(InstanciaBZ())
     Personagens[0].modelo = DesenhaPersonagem
-    Personagens[0].rotacao = 0
+    Personagens[0].rotacao = 1
     Personagens[0].posicao = Ponto(0,0)
     Personagens[0].escala = Ponto (1,1,1) 
 
@@ -181,7 +186,7 @@ def arrow_keys(a_keys: int, x: int, y: int):
     if a_keys == GLUT_KEY_DOWN:       # Se pressionar DOWN
         pass
     if a_keys == GLUT_KEY_LEFT:       # Se pressionar LEFT
-        Personagens[1].posicao.x -= 0.5
+        Personagens[1].posicao.x -= 1
         
     if a_keys == GLUT_KEY_RIGHT:      # Se pressionar RIGHT
         Personagens[1].rotacao += 1
