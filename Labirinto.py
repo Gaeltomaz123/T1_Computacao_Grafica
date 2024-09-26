@@ -39,11 +39,11 @@ def CarregaModelos():
 def DesenhaPersonagem():
     glBegin(GL_TRIANGLES)
     SetColor(YellowGreen)
-    glVertex3f(-0.1, -0.1, 0.0)
-    glVertex3f( 0.1, -0.1, 0.0)
-    glVertex3f( 0.1,  0.1, 0.0)
-    glVertex3f(-0.1,  0.1, 0.0)
+    glVertex3f(0.0, 0.2, 0.0)
+    glVertex3f(-0.2, -0.2, 0.0)
+    glVertex3f(0.2,  -0.2, 0.0)
     glEnd()
+
     pass
 
 
@@ -56,7 +56,7 @@ def CriaInstancias():
     Personagens[0].modelo = DesenhaPersonagem
     Personagens[0].rotacao = 1
     Personagens[0].posicao = Ponto(0,0)
-    Personagens[0].escala = Ponto (1,1,1) 
+    Personagens[0].escala = Ponto (1,1,1)
 
 
 # ***********************************************************************************
@@ -157,8 +157,8 @@ def display():
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
 
-    DesenhaPersonagens()
     DesenhaCurvas()
+    DesenhaPersonagens()
     
     glutSwapBuffers()
 
@@ -182,14 +182,14 @@ def keyboard(*args):
 # **********************************************************************
 def arrow_keys(a_keys: int, x: int, y: int):
     if a_keys == GLUT_KEY_UP:         # Se pressionar UP
-        pass
+        Personagens[0].escala.x += 1
     if a_keys == GLUT_KEY_DOWN:       # Se pressionar DOWN
-        pass
+        Personagens[0].escala.x -= 1
     if a_keys == GLUT_KEY_LEFT:       # Se pressionar LEFT
-        Personagens[1].posicao.x -= 1
+        Personagens[0].posicao.x -= 1
         
     if a_keys == GLUT_KEY_RIGHT:      # Se pressionar RIGHT
-        Personagens[1].rotacao += 1
+        Personagens[0].posicao.x += 1
 
     glutPostRedisplay()
 
