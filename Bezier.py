@@ -38,10 +38,9 @@ class Bezier:
         while(t<1.0):
             P = self.Calcula(t)
             glVertex2f(P.x, P.y)
-            t += DeltaT
+            t += DeltaT    
         P = self.Calcula(1.0) #faz o acabamento da curva
         glVertex2f(P.x, P.y)
-        
         glEnd()
 
     def TracaPoligonoDeControle(self):

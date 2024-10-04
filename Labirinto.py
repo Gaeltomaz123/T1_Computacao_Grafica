@@ -6,6 +6,8 @@ from InstanciaBZ import *
 from Bezier import *
 from ListaDeCoresRGB import *
 import random
+import time
+import math
 # ***********************************************************************************
 
 # Cores aleatórias para as curvas
@@ -28,7 +30,10 @@ Personagens = []
 Curvas = []
 
 angulo = 0.0
-
+t = 0
+velocidade = 0.004
+curva_atual = None
+direcao = 1 
 # ***********************************************************************************
 #
 # ***********************************************************************************
@@ -44,7 +49,6 @@ def DesenhaPersonagem():
     glVertex3f(0.2,  -0.2, 0.0)
     glEnd()
 
-    pass
 
 
 # ***********************************************************************************
@@ -94,9 +98,43 @@ def init():
 
 # ****************************************************************
 def animate():
-    global angulo
-    angulo = angulo + 1
+    global t
+    global velocidade
+    global curva_atual
+    global direcao
+
+    t += velocidade * direcao
+        
+    print(curva_atual)
+
+    if curva_atual == None:
+        curva_atual = random.choice(Curvas)
+    else:
+        if t > 1.0: 
+            curvas_comum = []
+            for curva in Curvas:
+                if(curva != curva_atual):
+                    for coord in curva.Coords:
+                        if coord.x == round(Personagens[0].posicao.x) and coord.y == round(Personagens[0].posicao.y):
+                            curvas_comum.append(curva)
+            curva_atual = random.choice(curvas_comum)
+            t = 1.0
+            direcao = -1  # Inverte para voltar
+        elif t < 0.0:
+            curva_atual = random.choice(Curvas)
+            t = 0.0
+            direcao = 1 
+
+    P = Calcula(curva_atual.Coords, t)
+    Personagens[0].posicao.x = P.x
+    Personagens[0].posicao.y = P.y
     glutPostRedisplay()
+
+def Calcula(Coords, t):
+        UmMenosT = 1-t
+        P = Ponto()
+        P = Coords[0] * UmMenosT * UmMenosT + Coords[1] * 2 * UmMenosT * t + Coords[2] * t*t
+        return P  
 
 # ****************************************************************
 def DesenhaLinha (P1, P2):
