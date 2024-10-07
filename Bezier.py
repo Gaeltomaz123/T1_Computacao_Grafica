@@ -3,6 +3,7 @@ from Ponto import Ponto
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
+import math
 import copy
 
 class Bezier:
@@ -10,6 +11,7 @@ class Bezier:
         print ("Construtora da Bezier")
         self.ComprimentoTotalDaCurva = 0.0
         self.Coords = [p0, p1, p2]
+        self.id = id
         #P = self.Coords[0]
         #P.imprime()
 
@@ -34,12 +36,18 @@ class Bezier:
         DeltaT = 1.0/50
         P = Ponto
         glBegin(GL_LINE_STRIP)
+
+        self.ComprimentoTotalDaCurva = 0.0
         
+        P2 = self.Calcula(0)
         while(t<1.0):
             P = self.Calcula(t)
+            self.ComprimentoTotalDaCurva += math.sqrt((P2.x - P.x)**2 + (P2.y - P.y)**2)
+            self.P2 = P
             glVertex2f(P.x, P.y)
             t += DeltaT    
         P = self.Calcula(1.0) #faz o acabamento da curva
+        self.ComprimentoTotalDaCurva += math.sqrt((P2.x - P.x)**2 + (P2.y - P.y)**2)
         glVertex2f(P.x, P.y)
         glEnd()
 

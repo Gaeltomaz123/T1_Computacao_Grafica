@@ -9,15 +9,25 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from Ponto import *
+import random 
+from ListaDeCoresRGB import *
 
 """ Classe Instancia """
 class InstanciaBZ:   
-    def __init__(self):
+    def __init__(self, n=None, npc=None, t=0, dir=0, inimigo=False, cor=4, velocidade=0.1, angulo=0, direcao = 1):
         self.posicao = Ponto (0,0,0) 
         self.escala = Ponto (1,1,1)
         self.rotacao:float = 0.0
         self.modelo = None
         self.t = 0.0
+        self.num_curva = n
+        self.num_prox_curva = npc
+        self.dir = dir
+        self.t = t
+        self.cor = cor
+        self.velocidade = velocidade
+        self.angulo = angulo
+        self.direcao = direcao
     
     """ Imprime os valores de cada eixo do ponto """
     # Faz a impressao usando sobrecarga de funcao
@@ -40,7 +50,9 @@ class InstanciaBZ:
         glTranslatef(self.posicao.x, self.posicao.y, 0)
         glRotatef(self.rotacao, 0, 0, 1)
         glScalef(self.escala.x, self.escala.y, self.escala.z)
+        SetColor(self.cor)
         self.modelo()
         glPopMatrix()
+
 
     
