@@ -28,7 +28,9 @@ Personagens = []
 # ***********************************************************************************
 # Lista de curvas Bezier
 Curvas = []
-Interceccoes = []
+Curvas_00 = []
+Interceccoes_Inicial = []
+Interceccoes_Final = []
 # ***********************************************************************************
 #
 # ***********************************************************************************
@@ -36,11 +38,20 @@ def CarregaModelos():
     PontosControle.LePontosDeArquivo("CurvasControle.txt")
 
 # ***********************************************************************************
-def DesenhaPersonagem():
+def DesenhaInimigo():
     glBegin(GL_TRIANGLES)
-    glVertex3f(0.0, 0.2, 0.0)
+    glVertex3f(0.2, 0.0, 0.0)
     glVertex3f(-0.2, -0.2, 0.0)
-    glVertex3f(0.2,  -0.2, 0.0)
+    glVertex3f(-0.2,  0.2, 0.0)
+    glEnd()
+
+
+def DesenhaJogador():
+    glBegin(GL_TRIANGLES)
+    glVertex3f(0.2, 0.0, 0.0)
+    SetColor(1)
+    glVertex3f(-0.2, -0.2, 0.0)
+    glVertex3f(-0.2,  0.2, 0.0)
     glEnd()
 
 
@@ -50,14 +61,25 @@ def DesenhaPersonagem():
 # ***********************************************************************************
 def CriaInstancias():
     global Personagens
-    for i in range(10):
+
+    # Cria jogador
+    Personagens.append(InstanciaBZ())
+    Personagens[0].modelo = DesenhaJogador
+    Personagens[0].rotacao = 0
+    Personagens[0].posicao = Ponto(-0.1,0)
+    Personagens[0].escala = Ponto (0.7,0.7,0.7)
+    Personagens[0].cor = 4
+
+    # Cria Inimigos
+    for i in range(1, 11):
         Personagens.append(InstanciaBZ())
-        Personagens[i].modelo = DesenhaPersonagem
+        Personagens[i].modelo = DesenhaInimigo
         Personagens[i].rotacao = 0
         Personagens[i].posicao = Ponto(0,0)
-        Personagens[i].escala = Ponto (1,1,1)
+        Personagens[i].escala = Ponto (0.7,0.7,0.7)
         Personagens[i].cor = 50 + i
         Personagens[i].t = 0.5
+        Personagens[i].movendo = True
         if i > 4:
             Personagens[i].direcao = -1
 
@@ -65,7 +87,6 @@ def CriaInstancias():
 # ***********************************************************************************
 def CriaCurvas():
     global Curvas
-
     infile = open("Curvas.txt")
     line = infile.readline()
     for line in infile:
@@ -76,19 +97,35 @@ def CriaCurvas():
 
 def CriaInterceccoes():
     global Curvas
-    global Interceccoes
+    global Interceccoes_Inicial
+    global Interceccoes_Final
+    global Curvas_00
 
-    count = 0
     for curva in Curvas:
-        interceccao = []
+        interceccao_inicial = []
+        interceccao_final = []
+        # Se a curva começa ou termina no ponto (0,0) é adicionada a lista de curvas com pontos (0,0)
+        if((curva.Coords[0].x == 0 and curva.Coords[0].y == 0) or (curva.Coords[2].x == 0 and curva.Coords[2].y == 0)):
+            Curvas_00.append(curva)
         for curva_int in Curvas:
-                if(curva.Coords[2].x == curva_int.Coords[2].x and curva.Coords[2].y == curva_int.Coords[2].y):
-                    interceccao.append(curva_int)
-                if(curva.Coords[0].x != 0 and curva.Coords[0].y != 0 and (curva.Coords[0].x == curva_int.Coords[0].x and curva.Coords[0].y == curva_int.Coords[0].y)):
-                    interceccao.append(curva_int)
-        interceccao.remove(curva)
-        count += 1
-        Interceccoes.append(interceccao)
+            #Compara ponto inicial com ponto inicial
+            if(curva.Coords[0].x == curva_int.Coords[0].x and curva.Coords[0].y == curva_int.Coords[0].y):
+                interceccao_inicial.append(curva_int)
+            #Compara ponto inicial com ponto final
+            if(curva.Coords[0].x == curva_int.Coords[2].x and curva.Coords[0].y == curva_int.Coords[2].y):
+                interceccao_inicial.append(curva_int)
+            #Compara ponto final com ponto inicial
+            if(curva.Coords[2].x == curva_int.Coords[0].x and curva.Coords[2].y == curva_int.Coords[0].y):
+                interceccao_final.append(curva_int)
+            #Compara ponto final com ponto final 
+            if(curva.Coords[2].x == curva_int.Coords[2].x and curva.Coords[2].y == curva_int.Coords[2].y):
+                interceccao_final.append(curva_int)
+
+        # Remove as proprias curvas
+        interceccao_inicial.remove(curva)
+        interceccao_final.remove(curva)
+        Interceccoes_Inicial.append(interceccao_inicial)
+        Interceccoes_Final.append(interceccao_final)
 
 
 # ***********************************************************************************
@@ -108,34 +145,62 @@ def init():
 
 # ****************************************************************
 def animate():
-    
-    #print(round(t, 3))
+    global Curvas
+    global Curvas_00
+    global Interceccoes_Inicial
+    global Interceccoes_Final
+
+    #Para cada personagem
     for personagem in Personagens:
+
+        #Se ainda não escolheu nenhuma curva
         if personagem.num_curva == None:
-            personagem.num_curva = Curvas.index(random.choice(Curvas))
-            personagem.num_prox_curva = Curvas.index(random.choice(Curvas))
-        elif round(personagem.t, 1) == 0.5:
-            personagem.num_prox_curva = Curvas.index(random.choice(Interceccoes[personagem.num_curva]))
-        elif personagem.t > 1:
-            personagem.num_curva = personagem.num_prox_curva
-            personagem.direcao = -1
-        elif personagem.t < 0:
-            personagem.num_curva = Curvas.index(random.choice(Curvas))
-            personagem.num_prox_curva = Curvas.index(random.choice(Curvas))
-            personagem.direcao = 1
-        deltaT = personagem.velocidade / Curvas[personagem.num_curva].ComprimentoTotalDaCurva
-        personagem.t += deltaT * personagem.direcao
-    
-        P = Calcula(Curvas[personagem.num_curva].Coords, personagem.t)
-        P1 = Calcula(Curvas[personagem.num_curva].Coords, personagem.t + 0.01)
-        tangente_x = P1.x - P.x
-        tangente_y = P1.y - P.y
-        personagem.angulo = math.degrees(math.atan2(tangente_y, tangente_x))
-        personagem.angulo += 270 * personagem.direcao
-        personagem.rotacao = personagem.angulo
-        personagem.posicao = P
+            curva_inicial = random.choice(Curvas_00)
+            personagem.num_curva = Curvas.index(curva_inicial)
+            personagem.num_prox_curva = personagem.num_curva
+
+        # Se chegou na metade da curvaa
+        if round(personagem.t, 2) == 0.5:
+            # Se estiver indo escolhe as interceccoes finais, se estiver voltando as iniciais
+            if personagem.direcao == 1:
+                personagem.num_prox_curva = Curvas.index(random.choice(Interceccoes_Final[personagem.num_curva]))
+            else:
+                personagem.num_prox_curva = Curvas.index(random.choice(Interceccoes_Inicial[personagem.num_curva]))
+        
+        # Se movendo setado para true
+        if personagem.movendo:
+            personagem.inicio = False
+            # Alternância de Direção
+            # Curva atual recebe a proxima curva
+            if personagem.t > 1:
+                personagem.num_curva = personagem.num_prox_curva
+                personagem.direcao = -1
+            elif personagem.t < 0:
+                personagem.num_curva = personagem.num_prox_curva
+                personagem.direcao = 1
+
+            # Calculo da velocidade do personagem
+            deltaT = personagem.velocidade / Curvas[personagem.num_curva].ComprimentoTotalDaCurva
+            personagem.t += deltaT * personagem.direcao
+
+            # Calculo da Movimentação e da rotacao rente a curva
+            P = Calcula(Curvas[personagem.num_curva].Coords, personagem.t)
+            P1 = Calcula(Curvas[personagem.num_curva].Coords, personagem.t + 0.01 * personagem.direcao)
+            tangente_x = P1.x - P.x
+            tangente_y = P1.y - P.y
+            personagem.rotacao = math.degrees(math.atan2(tangente_y, tangente_x))
+            personagem.posicao = P
+
+        # Destaca proxima linha que o personagem escolheu
+        if(Personagens.index(personagem) == 0):
+            glLineWidth(4)
+            SetColor(1)
+            Curvas[personagem.num_prox_curva].Traca()
+            glutSwapBuffers()
+
     glutPostRedisplay()
 
+# Funcao calcula presente na InstanciaBZ
 def Calcula(Coords, t):
         UmMenosT = 1-t
         P = Ponto()
@@ -212,6 +277,7 @@ def display():
 # Note the use of Python tuples to pass in: (key, x, y)
 #ESCAPE = '\033'
 ESCAPE = b'\x1b'
+SPACE = b' '
 def keyboard(*args):
     print (args)
     # If escape is pressed, kill everything.
@@ -219,6 +285,11 @@ def keyboard(*args):
         os._exit(0)
     if args[0] == ESCAPE:
         os._exit(0)
+    if args[0] == SPACE:
+        if(Personagens[0].movendo):
+            Personagens[0].movendo = False
+        else:
+            Personagens[0].movendo = True
 # Forca o redesenho da tela
     glutPostRedisplay()
 
@@ -226,15 +297,35 @@ def keyboard(*args):
 #  arrow_keys ( a_keys: int, x: int, y: int )   
 # **********************************************************************
 def arrow_keys(a_keys: int, x: int, y: int):
+    global Curvas_00
+
     if a_keys == GLUT_KEY_UP:         # Se pressionar UP
-        Personagens[0].escala.x += 1
+        if Personagens[0].inicio:
+            Personagens[0].num_curva = Curvas_00.index(Curvas_00[(Personagens[0].num_prox_curva + 1) % len(Curvas_00)])
+            Personagens[0].num_prox_curva = Personagens[0].num_curva
+        else:
+            if Personagens[0].direcao == 1:
+                Personagens[0].num_prox_curva = Curvas.index((Interceccoes_Final[Personagens[0].num_curva][(Personagens[0].num_prox_curva + 1) % len(Interceccoes_Final[Personagens[0].num_curva])]))
+            else:
+                Personagens[0].num_prox_curva = Curvas.index((Interceccoes_Inicial[Personagens[0].num_curva][(Personagens[0].num_prox_curva + 1) % len(Interceccoes_Inicial[Personagens[0].num_curva])]))
+
     if a_keys == GLUT_KEY_DOWN:       # Se pressionar DOWN
-        Personagens[0].escala.x -= 1
+        if Personagens[0].inicio:
+            Personagens[0].num_curva = Curvas_00.index(Curvas_00[(Personagens[0].num_prox_curva - 1) % len(Curvas_00)])
+            Personagens[0].num_prox_curva = Personagens[0].num_curva
+        else:
+            if Personagens[0].direcao == 1:
+                Personagens[0].num_prox_curva = Curvas.index((Interceccoes_Final[Personagens[0].num_curva][(Personagens[0].num_prox_curva - 1) % len(Interceccoes_Final[Personagens[0].num_curva])]))
+            else:
+                Personagens[0].num_prox_curva = Curvas.index((Interceccoes_Inicial[Personagens[0].num_curva][(Personagens[0].num_prox_curva + 1) % len(Interceccoes_Inicial[Personagens[0].num_curva])]))
+
+
+
     if a_keys == GLUT_KEY_LEFT:       # Se pressionar LEFT
-        Personagens[0].posicao.x -= 1
+        Personagens[0].direcao = -1
         
     if a_keys == GLUT_KEY_RIGHT:      # Se pressionar RIGHT
-        Personagens[0].posicao.x += 1
+        Personagens[0].direcao = 1
 
     glutPostRedisplay()
 
