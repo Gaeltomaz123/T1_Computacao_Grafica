@@ -32,6 +32,8 @@ Curvas_00 = []
 Interceccoes_Inicial = []
 Interceccoes_Final = []
 Circular = 0
+score = 0
+jogo_rodando = False
 # ***********************************************************************************
 #
 # ***********************************************************************************
@@ -39,6 +41,22 @@ def CarregaModelos():
     PontosControle.LePontosDeArquivo("CurvasControle.txt")
 
 # ***********************************************************************************
+def Score():
+    global score
+    SetColor(4)
+    glRasterPos2f(-4.7, 4) 
+    score_text = f"Score: {score}"
+    
+    for char in score_text:
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, ord(char))
+
+
+def Atualiza_Score():
+    global score
+    if jogo_rodando:  
+        score += 1    
+
+
 def DesenhaInimigo():
     glBegin(GL_LINE_LOOP)  
     glVertex3f(0.2, 0.0, 0.0)    # Primeiro vértice
@@ -73,7 +91,7 @@ def CriaInstancias():
         Personagens.append(InstanciaBZ())
         Personagens[i].modelo = DesenhaInimigo
         Personagens[i].rotacao = 0
-        Personagens[i].posicao = Ponto(0,0)
+        Personagens[i].posicao = Ponto(0,0,0)
         Personagens[i].escala = Ponto (0.7,0.7,0.7)
         Personagens[i].cor = 50 + i
         Personagens[i].t = 0.5
@@ -147,7 +165,7 @@ def animate():
     global Curvas_00
     global Interceccoes_Inicial
     global Interceccoes_Final
-    global count
+    global jogo_rodando
 
 
     #Para cada personagem
@@ -166,6 +184,10 @@ def animate():
                     personagem.num_prox_curva = Curvas.index(random.choice(Interceccoes_Final[personagem.num_curva]))
                 else:
                     personagem.num_prox_curva = Curvas.index(random.choice(Interceccoes_Inicial[personagem.num_curva]))
+
+        if Personagens.index(personagem) == 0 and personagem.inicio == False:
+                jogo_rodando = True
+                Verifica_Colisao(personagem)
         
         # Se movendo setado para true
         if personagem.movendo:
@@ -193,7 +215,6 @@ def animate():
             tangente_y = P1.y - P.y
             personagem.rotacao = math.degrees(math.atan2(tangente_y, tangente_x))
             personagem.posicao = P
-
     glutPostRedisplay()
 
 # Funcao calcula presente na InstanciaBZ
@@ -203,6 +224,19 @@ def Calcula(Coords, t):
         P = Coords[0] * UmMenosT * UmMenosT + Coords[1] * 2 * UmMenosT * t + Coords[2] * t*t
         return P  
 
+def Verifica_Colisao(personagem):
+    global score
+    global jogo_rodando
+
+    for inimigos in Personagens:
+        if inimigos != personagem:
+            if (personagem.posicao.x >= inimigos.posicao.x - 0.1 and personagem.posicao.x <= inimigos.posicao.x + 0.1) and (personagem.posicao.y >= inimigos.posicao.y - 0.1 and personagem.posicao.y <= inimigos.posicao.y + 0.1):
+                score = 0
+                jogo_rodando = False
+                os._exit(0)
+
+    
+    
 
 # ****************************************************************
 def DesenhaLinha (P1, P2):
@@ -270,6 +304,8 @@ def display():
 
     DesenhaCurvas()
     DesenhaPersonagens()
+    Score()
+    Atualiza_Score()
     
     glutSwapBuffers()
 
@@ -330,14 +366,23 @@ def arrow_keys(a_keys: int, x: int, y: int):
             
 
 
-
     if a_keys == GLUT_KEY_LEFT:       # Se pressionar LEFT
-        Personagens[0].direcao = -1
-        Personagens[0].num_prox_curva = Curvas.index(random.choice(Interceccoes_Inicial[Personagens[0].num_curva]))
+        if Personagens[0].direcao == 1:
+            Personagens[0].direcao = -1
+            Personagens[0].num_prox_curva = Curvas.index(random.choice(Interceccoes_Inicial[Personagens[0].num_curva]))
+        else:
+            Personagens[0].direcao = 1
+            Personagens[0].num_prox_curva = Curvas.index(random.choice(Interceccoes_Final[Personagens[0].num_curva]))
+            Personagens[0].escolheu = True
         
     if a_keys == GLUT_KEY_RIGHT:      # Se pressionar RIGHT
-        Personagens[0].direcao = 1
-        Personagens[0].num_prox_curva = Curvas.index(random.choice(Interceccoes_Final[Personagens[0].num_curva]))
+        if Personagens[0].direcao == 1:
+            Personagens[0].direcao = -1
+            Personagens[0].num_prox_curva = Curvas.index(random.choice(Interceccoes_Inicial[Personagens[0].num_curva]))
+        else:
+            Personagens[0].direcao = 1
+            Personagens[0].num_prox_curva = Curvas.index(random.choice(Interceccoes_Final[Personagens[0].num_curva]))
+            Personagens[0].escolheu = True
 
     glutPostRedisplay()
 
@@ -375,7 +420,6 @@ def mouseMove(x: int, y: int):
 # ***********************************************************************************
 # Programa Principal
 # ***********************************************************************************
-
 glutInit(sys.argv)
 glutInitDisplayMode(GLUT_RGBA)
 # Define o tamanho inicial da janela grafica do programa

@@ -14,15 +14,13 @@ from ListaDeCoresRGB import *
 
 """ Classe Instancia """
 class InstanciaBZ:   
-    def __init__(self, n=None, npc=None, t=0, dir=0, inimigo=False, cor=4, velocidade=0.1, direcao = 1, movendo=False, inicio=True, escolheu=False, indice = 0):
+    def __init__(self, n=None, npc=None, t=0, cor=4, velocidade=0.1, direcao = 1, movendo=False, inicio=True, escolheu=False):
         self.posicao = Ponto (0,0,0) 
         self.escala = Ponto (1,1,1)
         self.rotacao:float = 0.0
         self.modelo = None
-        self.t = 0.0
         self.num_curva = n
         self.num_prox_curva = npc
-        self.dir = dir
         self.t = t
         self.cor = cor
         self.velocidade = velocidade
@@ -30,7 +28,6 @@ class InstanciaBZ:
         self.movendo = movendo
         self.inicio = inicio
         self.escolheu = escolheu
-        self.indice = indice
     
     """ Imprime os valores de cada eixo do ponto """
     # Faz a impressao usando sobrecarga de funcao
