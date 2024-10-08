@@ -31,6 +31,7 @@ Curvas = []
 Curvas_00 = []
 Interceccoes_Inicial = []
 Interceccoes_Final = []
+Circular = 0
 # ***********************************************************************************
 #
 # ***********************************************************************************
@@ -39,21 +40,18 @@ def CarregaModelos():
 
 # ***********************************************************************************
 def DesenhaInimigo():
-    glBegin(GL_TRIANGLES)
-    glVertex3f(0.2, 0.0, 0.0)
-    glVertex3f(-0.2, -0.2, 0.0)
-    glVertex3f(-0.2,  0.2, 0.0)
+    glBegin(GL_LINE_LOOP)  
+    glVertex3f(0.2, 0.0, 0.0)    # Primeiro vértice
+    glVertex3f(-0.2, -0.2, 0.0)  # Segundo vértice
+    glVertex3f(-0.2, 0.2, 0.0)   # Terceiro vértice
     glEnd()
-
 
 def DesenhaJogador():
     glBegin(GL_TRIANGLES)
     glVertex3f(0.2, 0.0, 0.0)
-    SetColor(1)
     glVertex3f(-0.2, -0.2, 0.0)
     glVertex3f(-0.2,  0.2, 0.0)
     glEnd()
-
 
 
 # ***********************************************************************************
@@ -149,10 +147,11 @@ def animate():
     global Curvas_00
     global Interceccoes_Inicial
     global Interceccoes_Final
+    global count
+
 
     #Para cada personagem
     for personagem in Personagens:
-
         #Se ainda não escolheu nenhuma curva
         if personagem.num_curva == None:
             curva_inicial = random.choice(Curvas_00)
@@ -160,12 +159,13 @@ def animate():
             personagem.num_prox_curva = personagem.num_curva
 
         # Se chegou na metade da curvaa
-        if round(personagem.t, 2) == 0.5:
-            # Se estiver indo escolhe as interceccoes finais, se estiver voltando as iniciais
-            if personagem.direcao == 1:
-                personagem.num_prox_curva = Curvas.index(random.choice(Interceccoes_Final[personagem.num_curva]))
-            else:
-                personagem.num_prox_curva = Curvas.index(random.choice(Interceccoes_Inicial[personagem.num_curva]))
+        if not personagem.escolheu:
+            if round(personagem.t, 2) == 0.5:
+                # Se estiver indo escolhe as interceccoes finais, se estiver voltando as iniciais
+                if personagem.direcao == 1:
+                    personagem.num_prox_curva = Curvas.index(random.choice(Interceccoes_Final[personagem.num_curva]))
+                else:
+                    personagem.num_prox_curva = Curvas.index(random.choice(Interceccoes_Inicial[personagem.num_curva]))
         
         # Se movendo setado para true
         if personagem.movendo:
@@ -175,10 +175,13 @@ def animate():
             if personagem.t > 1:
                 personagem.num_curva = personagem.num_prox_curva
                 personagem.direcao = -1
+                personagem.escolheu = False
+                Circular = 0
             elif personagem.t < 0:
                 personagem.num_curva = personagem.num_prox_curva
                 personagem.direcao = 1
-
+                personagem.escolheu = False
+                Circular = 0
             # Calculo da velocidade do personagem
             deltaT = personagem.velocidade / Curvas[personagem.num_curva].ComprimentoTotalDaCurva
             personagem.t += deltaT * personagem.direcao
@@ -190,13 +193,6 @@ def animate():
             tangente_y = P1.y - P.y
             personagem.rotacao = math.degrees(math.atan2(tangente_y, tangente_x))
             personagem.posicao = P
-
-        # Destaca proxima linha que o personagem escolheu
-        if(Personagens.index(personagem) == 0):
-            glLineWidth(4)
-            SetColor(1)
-            Curvas[personagem.num_prox_curva].Traca()
-            glutSwapBuffers()
 
     glutPostRedisplay()
 
@@ -254,6 +250,11 @@ def DesenhaCurvas():
         glLineWidth(2)
         SetColor(cores[count])
         I.Traca()
+        if(Personagens[0].num_prox_curva != None):
+            if(Curvas[Personagens[0].num_prox_curva] == I):
+                glLineWidth(6)
+                SetColor(1)
+                I.Traca()
         count += 1
         #DesenhaPoligonoDeControle(v)
 
@@ -298,34 +299,45 @@ def keyboard(*args):
 # **********************************************************************
 def arrow_keys(a_keys: int, x: int, y: int):
     global Curvas_00
+    global Interceccoes_Inicial
+    global Interceccoes_Final
+    global Circular
 
     if a_keys == GLUT_KEY_UP:         # Se pressionar UP
+        Personagens[0].escolheu = True
         if Personagens[0].inicio:
-            Personagens[0].num_curva = Curvas_00.index(Curvas_00[(Personagens[0].num_prox_curva + 1) % len(Curvas_00)])
+            Personagens[0].num_curva = Curvas.index(Curvas_00[(Personagens[0].num_prox_curva + 1) % len(Curvas_00)])
             Personagens[0].num_prox_curva = Personagens[0].num_curva
         else:
             if Personagens[0].direcao == 1:
-                Personagens[0].num_prox_curva = Curvas.index((Interceccoes_Final[Personagens[0].num_curva][(Personagens[0].num_prox_curva + 1) % len(Interceccoes_Final[Personagens[0].num_curva])]))
+                Personagens[0].num_prox_curva = Curvas.index(Interceccoes_Final[(Personagens[0].num_curva)][Circular % len(Interceccoes_Final[(Personagens[0].num_curva)])])
             else:
-                Personagens[0].num_prox_curva = Curvas.index((Interceccoes_Inicial[Personagens[0].num_curva][(Personagens[0].num_prox_curva + 1) % len(Interceccoes_Inicial[Personagens[0].num_curva])]))
+                Personagens[0].num_prox_curva = Curvas.index(Interceccoes_Inicial[(Personagens[0].num_curva)][Circular % len(Interceccoes_Inicial[(Personagens[0].num_curva)])])
+            Circular += 1
+
 
     if a_keys == GLUT_KEY_DOWN:       # Se pressionar DOWN
+        Personagens[0].escolheu = True
         if Personagens[0].inicio:
-            Personagens[0].num_curva = Curvas_00.index(Curvas_00[(Personagens[0].num_prox_curva - 1) % len(Curvas_00)])
+            Personagens[0].num_curva = Curvas.index(Curvas_00[(Personagens[0].num_prox_curva - 1) % len(Curvas_00)])
             Personagens[0].num_prox_curva = Personagens[0].num_curva
         else:
             if Personagens[0].direcao == 1:
-                Personagens[0].num_prox_curva = Curvas.index((Interceccoes_Final[Personagens[0].num_curva][(Personagens[0].num_prox_curva - 1) % len(Interceccoes_Final[Personagens[0].num_curva])]))
+                Personagens[0].num_prox_curva = Curvas.index(Interceccoes_Final[(Personagens[0].num_curva)][Circular % len(Interceccoes_Final[(Personagens[0].num_curva)])])
             else:
-                Personagens[0].num_prox_curva = Curvas.index((Interceccoes_Inicial[Personagens[0].num_curva][(Personagens[0].num_prox_curva + 1) % len(Interceccoes_Inicial[Personagens[0].num_curva])]))
+                Personagens[0].num_prox_curva = Curvas.index(Interceccoes_Inicial[(Personagens[0].num_curva)][Circular % len(Interceccoes_Inicial[(Personagens[0].num_curva)])])
+            Circular -= 1
+            
 
 
 
     if a_keys == GLUT_KEY_LEFT:       # Se pressionar LEFT
         Personagens[0].direcao = -1
+        Personagens[0].num_prox_curva = Curvas.index(random.choice(Interceccoes_Inicial[Personagens[0].num_curva]))
         
     if a_keys == GLUT_KEY_RIGHT:      # Se pressionar RIGHT
         Personagens[0].direcao = 1
+        Personagens[0].num_prox_curva = Curvas.index(random.choice(Interceccoes_Final[Personagens[0].num_curva]))
 
     glutPostRedisplay()
 
